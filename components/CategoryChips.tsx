@@ -77,23 +77,26 @@ export function CategoryChips({ selectedCategory, onSelectCategory }: CategoryCh
 
 const styles = StyleSheet.create({
     scrollView: {
-        marginBottom: 20,
+        marginBottom: 24,
     },
     container: {
         paddingHorizontal: 4,
-        paddingVertical: 8,
-        gap: 10,
+        paddingVertical: 12,
+        gap: 12,
     },
     chip: {
-        paddingHorizontal: 16,
-        paddingVertical: 10,
+        minWidth: 120,
+        paddingHorizontal: 20,
+        paddingVertical: 12,
         borderRadius: 24,
         borderWidth: 1.5,
+        alignItems: 'center',
+        justifyContent: 'center',
         ...Platform.select({
             ios: {
                 shadowColor: '#000',
                 shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
+                shadowOpacity: 0.08,
                 shadowRadius: 4,
             },
             android: {
@@ -108,6 +111,7 @@ const styles = StyleSheet.create({
     },
     chipText: {
         fontSize: 14,
-        letterSpacing: 0.3,
+        letterSpacing: 0.2,
+        textAlign: 'center',
     },
 });

@@ -7,7 +7,6 @@ import { ProductCard } from '@/components/ProductCard';
 import { ShimmerLoader } from '@/components/ShimmerLoader';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useBestsellers } from '@/hooks/useBestsellers';
@@ -65,19 +64,27 @@ export default function HomeScreen() {
             {/* Subtitle */}
             <ThemedText style={styles.headerSubtitle}>Bestsellers Explorer</ThemedText>
 
-            {/* Search Bar Placeholder */}
-            <TouchableOpacity
-              style={[styles.searchBar, {
-                backgroundColor: colorScheme === 'light' ? 'rgba(255, 255, 255, 0.95)' : 'rgba(30, 30, 30, 0.95)',
-                borderColor: colorScheme === 'light' ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.1)',
-              }]}
-              activeOpacity={0.8}
-            >
-              <IconSymbol name="magnifyingglass" size={18} color={colors.textSecondary} />
-              <ThemedText style={[styles.searchPlaceholder, { color: colors.textSecondary }]}>
-                Search bestselling products...
-              </ThemedText>
-            </TouchableOpacity>
+            {/* Status and Update Info */}
+            {!fromCache && (
+              <View style={styles.headerInfoRow}>
+                <View style={[styles.headerStatusBadge, { backgroundColor: 'rgba(255, 255, 255, 0.25)' }]}>
+                  <View style={[styles.headerLiveDot, { backgroundColor: '#FFFFFF' }]} />
+                  <ThemedText style={styles.headerStatusText}>LIVE</ThemedText>
+                </View>
+                {lastUpdated && (
+                  <ThemedText style={styles.headerUpdateTime}>
+                    Updated {getLastUpdatedText()}
+                  </ThemedText>
+                )}
+              </View>
+            )}
+            {fromCache && lastUpdated && (
+              <View style={styles.headerInfoRow}>
+                <ThemedText style={styles.headerUpdateTime}>
+                  Updated {getLastUpdatedText()}
+                </ThemedText>
+              </View>
+            )}
 
             {/* Stats Row */}
             <View style={styles.statsRow}>
@@ -91,33 +98,6 @@ export default function HomeScreen() {
           </View>
         </View>
       }>
-
-      {/* Title Section */}
-      <ThemedView style={styles.titleContainer}>
-        <View style={styles.titleRow}>
-          <ThemedText type="title" style={styles.mainTitle}>Top Products</ThemedText>
-          {fromCache ? (
-            <View style={[styles.cacheBadge, { backgroundColor: colors.primeLight }]}>
-              <ThemedText style={[styles.cacheText, { color: colors.prime }]}>💾 Cached</ThemedText>
-            </View>
-          ) : (
-            <View style={[styles.liveBadge, { backgroundColor: colors.successLight }]}>
-              <View style={[styles.liveDot, { backgroundColor: colors.success }]} />
-              <ThemedText style={[styles.liveText, { color: colors.success }]}>LIVE</ThemedText>
-            </View>
-          )}
-        </View>
-        <View style={styles.subtitleRow}>
-          <ThemedText style={[styles.subtitle, { color: colors.textSecondary }]}>
-            Browse the most popular products on Amazon
-          </ThemedText>
-          {lastUpdated && (
-            <ThemedText style={[styles.lastUpdated, { color: colors.textSecondary }]}>
-              Updated {getLastUpdatedText()}
-            </ThemedText>
-          )}
-        </View>
-      </ThemedView>
 
       {/* Category Filter */}
       <CategoryChips
@@ -214,20 +194,20 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 24,
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 28,
   },
   logoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    marginBottom: 4,
+    gap: 14,
+    marginBottom: 6,
   },
   logoIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
+    width: 48,
+    height: 48,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -238,13 +218,13 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   headerTitle: {
-    fontSize: 42,
+    fontSize: 44,
     fontWeight: '800',
     color: '#FFFFFF',
-    letterSpacing: -2,
-    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    letterSpacing: -1.5,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
     textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
+    textShadowRadius: 6,
   },
   smileLine: {
     width: 60,
@@ -254,73 +234,81 @@ const styles = StyleSheet.create({
     marginLeft: 'auto',
   },
   headerSubtitle: {
-    fontSize: 18,
+    fontSize: 16,
     color: '#FFFFFF',
     fontWeight: '600',
-    opacity: 0.9,
-    letterSpacing: 2,
+    opacity: 0.95,
+    letterSpacing: 1.5,
     textTransform: 'uppercase',
-    marginTop: 2,
-    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    marginTop: 4,
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
     textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
+    textShadowRadius: 3,
   },
-  searchBar: {
+  headerInfoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    width: '100%',
-    maxWidth: 360,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 12,
+    justifyContent: 'center',
+    gap: 14,
     marginTop: 16,
-    borderWidth: 1,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
+    flexWrap: 'wrap',
   },
-  searchPlaceholder: {
-    fontSize: 14,
+  headerStatusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 18,
+  },
+  headerStatusText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+  },
+  headerLiveDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+  },
+  headerUpdateTime: {
+    color: '#FFFFFF',
+    fontSize: 13,
     fontWeight: '500',
+    opacity: 0.85,
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   statsRow: {
     flexDirection: 'row',
-    gap: 10,
-    marginTop: 14,
+    gap: 12,
+    marginTop: 20,
+    justifyContent: 'center',
   },
   statBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 18,
   },
   statText: {
     color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '600',
+    letterSpacing: 0.3,
   },
-  titleContainer: {
-    gap: 6,
-    marginBottom: 16,
+  infoContainer: {
+    gap: 8,
+    marginBottom: 20,
     paddingHorizontal: 4,
   },
-  titleRow: {
+  infoRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    flexWrap: 'wrap',
     gap: 12,
-  },
-  mainTitle: {
-    fontSize: 26,
-    fontWeight: '700',
-    letterSpacing: -0.5,
   },
   liveBadge: {
     flexDirection: 'row',
@@ -351,33 +339,28 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
   },
-  subtitleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
   subtitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '500',
-    lineHeight: 20,
+    lineHeight: 22,
+    flex: 1,
+    minWidth: 200,
   },
   lastUpdated: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '500',
-    fontStyle: 'italic',
+    opacity: 0.7,
   },
   loaderContainer: {
-    paddingVertical: 8,
+    paddingVertical: 16,
   },
   errorContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
     marginHorizontal: 4,
-    marginVertical: 12,
-    borderRadius: 14,
+    marginVertical: 16,
+    borderRadius: 16,
     borderWidth: 1,
     gap: 12,
     flexWrap: 'wrap',
@@ -395,19 +378,25 @@ const styles = StyleSheet.create({
   errorTextContainer: {
     flex: 1,
     minWidth: 150,
+    gap: 4,
+    flexDirection: 'column',
   },
   errorTitle: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '700',
-    marginBottom: 2,
+    letterSpacing: -0.2,
   },
   errorText: {
     fontSize: 13,
+    lineHeight: 18,
   },
   retryButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 18,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    minWidth: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   retryText: {
     color: '#FFFFFF',
@@ -417,20 +406,22 @@ const styles = StyleSheet.create({
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 40,
-    gap: 8,
+    padding: 48,
+    gap: 12,
   },
   emptyIcon: {
     fontSize: 48,
-    marginBottom: 8,
+    marginBottom: 4,
   },
   emptyTitle: {
     fontSize: 18,
     fontWeight: '700',
+    letterSpacing: -0.3,
   },
   emptyText: {
     fontSize: 14,
     textAlign: 'center',
+    lineHeight: 20,
   },
   listContainer: {
     paddingBottom: 24,
@@ -447,13 +438,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderRadius: 20,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.15,
+        shadowOpacity: 0.12,
         shadowRadius: 8,
       },
       android: {

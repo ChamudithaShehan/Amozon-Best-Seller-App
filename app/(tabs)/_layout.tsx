@@ -13,6 +13,7 @@ export default function TabLayout() {
 
   return (
     <Tabs
+      key={colorScheme}
       screenOptions={{
         tabBarActiveTintColor: colors.tint,
         tabBarInactiveTintColor: colors.tabIconDefault,
@@ -63,7 +64,7 @@ export default function TabLayout() {
               <IconSymbol
                 size={focused ? 26 : 24}
                 name={focused ? "house.fill" : "house"}
-                color={color}
+                color={color || colors.tabIconDefault}
               />
             </View>
           ),
@@ -82,7 +83,7 @@ export default function TabLayout() {
               <IconSymbol
                 size={focused ? 26 : 24}
                 name={focused ? "sparkles" : "sparkle"}
-                color={color}
+                color={color || colors.tabIconDefault}
               />
             </View>
           ),

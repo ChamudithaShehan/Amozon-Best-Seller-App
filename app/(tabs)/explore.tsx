@@ -89,28 +89,10 @@ export default function ExploreScreen() {
   return (
     <ParallaxScrollView
       headerBackgroundColor={{
-        light: colors.accentSecondary,
-        dark: colors.gradientEnd
+        light: colors.background,
+        dark: colors.background
       }}
-      headerImage={
-        <View style={styles.headerContent}>
-          <View style={[styles.headerGradient, { backgroundColor: colorScheme === 'light' ? colors.accentSecondary : colors.gradientEnd }]}>
-            <View style={[styles.headerIconBg, { backgroundColor: 'rgba(255, 255, 255, 0.1)' }]}>
-              <IconSymbol
-                size={48}
-                color="#FFFFFF"
-                name="sparkles"
-              />
-            </View>
-            <ThemedText style={styles.headerTitle}>
-              Explore
-            </ThemedText>
-            <ThemedText style={styles.headerSubtitle}>
-              Discover app features
-            </ThemedText>
-          </View>
-        </View>
-      }>
+      headerImage={undefined}>
 
       {/* Title Section */}
       <ThemedView style={styles.titleContainer}>
@@ -267,47 +249,13 @@ export default function ExploreScreen() {
 }
 
 const styles = StyleSheet.create({
-  headerContent: {
-    flex: 1,
-    width: '100%',
-  },
-  headerGradient: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    gap: 8,
-  },
-  headerIconBg: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  headerTitle: {
-    fontSize: 36,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    letterSpacing: -1,
-    textShadowColor: 'rgba(0, 0, 0, 0.2)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: '#FFFFFF',
-    opacity: 0.9,
-    fontWeight: '500',
-  },
   titleContainer: {
-    gap: 6,
-    marginBottom: 16,
+    gap: 8,
+    marginBottom: 24,
     paddingHorizontal: 4,
   },
   mainTitle: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: '700',
     letterSpacing: -0.5,
   },
@@ -323,12 +271,12 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   lastUpdated: {
-    fontSize: 11,
+    fontSize: 12,
     fontStyle: 'italic',
   },
   featuresContainer: {
-    gap: 12,
-    marginBottom: 24,
+    gap: 16,
+    marginBottom: 32,
   },
   featureCard: {
     flexDirection: 'row',
@@ -336,19 +284,19 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 16,
     borderWidth: 1,
-    gap: 14,
+    gap: 16,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
+        shadowOpacity: 0.08,
         shadowRadius: 8,
       },
       android: {
         elevation: 3,
       },
       web: {
-        boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+        boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
         cursor: 'pointer',
         transition: 'all 0.2s ease',
       },
@@ -366,11 +314,12 @@ const styles = StyleSheet.create({
   },
   featureContent: {
     flex: 1,
-    gap: 2,
+    gap: 4,
   },
   featureTitle: {
     fontSize: 16,
     fontWeight: '700',
+    letterSpacing: -0.2,
   },
   featureDescription: {
     fontSize: 13,
@@ -382,15 +331,16 @@ const styles = StyleSheet.create({
   },
   sectionContainer: {
     marginTop: 8,
-    marginBottom: 12,
+    marginBottom: 16,
     paddingHorizontal: 4,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
+    letterSpacing: -0.3,
   },
   settingsCard: {
-    padding: 16,
+    padding: 20,
     borderRadius: 16,
     borderWidth: 1,
     marginBottom: 24,
@@ -409,7 +359,7 @@ const styles = StyleSheet.create({
   settingIconBg: {
     width: 40,
     height: 40,
-    borderRadius: 10,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -419,9 +369,11 @@ const styles = StyleSheet.create({
   settingLabel: {
     fontSize: 15,
     fontWeight: '600',
+    letterSpacing: -0.1,
   },
   settingDescription: {
     fontSize: 12,
+    lineHeight: 16,
   },
   themeModeSelector: {
     flexDirection: 'row',
@@ -429,21 +381,22 @@ const styles = StyleSheet.create({
   },
   themeModeButton: {
     flex: 1,
-    paddingVertical: 10,
-    borderRadius: 10,
+    paddingVertical: 12,
+    borderRadius: 12,
     borderWidth: 1,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   themeModeText: {
     fontSize: 12,
     fontWeight: '600',
   },
   appInfoContainer: {
-    padding: 16,
+    padding: 20,
     borderRadius: 16,
     borderWidth: 1,
-    gap: 12,
-    marginBottom: 20,
+    gap: 16,
+    marginBottom: 24,
   },
   appInfoRow: {
     flexDirection: 'row',
