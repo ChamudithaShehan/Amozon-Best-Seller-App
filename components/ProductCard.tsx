@@ -40,12 +40,34 @@ export function ProductCard({ product, onPress }: ProductCardProps) {
                     backgroundColor: colors.cardBackground,
                     borderColor: hovered ? colors.accent : colors.border,
                     transform: [{ scale: pressed ? 0.98 : hovered ? 1.01 : 1 }],
+                    shadowColor: colorScheme === 'light' ? '#000' : '#000',
+                    shadowOpacity: hovered ? 0.15 : 0.08,
                 },
             ]}
         >
+            {/* Position Badge - Top Right */}
+            {product.position && (
+                <View style={[
+                    styles.positionBadge,
+                    {
+                        backgroundColor: colors.accent,
+                        shadowColor: colors.accent,
+                    }
+                ]}>
+                    <ThemedText style={styles.positionText}>#{product.position}</ThemedText>
+                </View>
+            )}
+
             {/* Product Image Section */}
             <View style={styles.imageSection}>
-                <View style={[styles.imageContainer, { backgroundColor: colorScheme === 'light' ? '#FAFAFA' : colors.glassOverlay }]}>
+                <View style={[
+                    styles.imageContainer,
+                    {
+                        backgroundColor: colorScheme === 'light' ? '#F5F5F5' : colors.glassOverlay,
+                        shadowColor: '#000',
+                        shadowOpacity: colorScheme === 'light' ? 0.1 : 0.3,
+                    }
+                ]}>
                     {product.image ? (
                         <Image
                             source={{ uri: product.image }}
@@ -60,16 +82,15 @@ export function ProductCard({ product, onPress }: ProductCardProps) {
                     )}
                 </View>
 
-                {/* Position Badge */}
-                {product.position && (
-                    <View style={[styles.positionBadge, { backgroundColor: colors.accent }]}>
-                        <ThemedText style={styles.positionText}>#{product.position}</ThemedText>
-                    </View>
-                )}
-
                 {/* Top Seller Medal */}
                 {product.position && product.position <= 3 && (
-                    <View style={[styles.medalBadge, { backgroundColor: colors.gradientEnd }]}>
+                    <View style={[
+                        styles.medalBadge,
+                        {
+                            backgroundColor: colors.gradientEnd,
+                            shadowColor: colors.gradientEnd,
+                        }
+                    ]}>
                         <ThemedText style={styles.medalText}>
                             {product.position === 1 ? '🥇' : product.position === 2 ? '🥈' : '🥉'}
                         </ThemedText>
@@ -95,7 +116,7 @@ export function ProductCard({ product, onPress }: ProductCardProps) {
                         </ThemedText>
                         {product.ratings_total && (
                             <ThemedText style={[styles.reviewCount, { color: colors.textSecondary }]}>
-                                ({product.ratings_total.toLocaleString()} reviews)
+                                ({product.ratings_total.toLocaleString()})
                             </ThemedText>
                         )}
                     </View>
@@ -111,7 +132,7 @@ export function ProductCard({ product, onPress }: ProductCardProps) {
                             <ThemedText style={[styles.priceValue, { color: colors.text }]}>
                                 {Math.floor(product.price.value)}
                             </ThemedText>
-                            <ThemedText style={[styles.priceCents, { color: colors.text }]}>
+                            <ThemedText style={[styles.priceCents, { color: colors.textSecondary }]}>
                                 {((product.price.value % 1) * 100).toFixed(0).padStart(2, '0')}
                             </ThemedText>
                         </View>
@@ -126,17 +147,10 @@ export function ProductCard({ product, onPress }: ProductCardProps) {
                 <View style={styles.linkRow}>
                     <View style={[styles.amazonBadge, { backgroundColor: colors.primeLight }]}>
                         <ThemedText style={[styles.amazonText, { color: colors.prime }]}>
-                            🔗 View on Amazon
+                            View on Amazon
                         </ThemedText>
                     </View>
                 </View>
-
-                {/* ASIN for reference */}
-                {product.asin && (
-                    <ThemedText style={[styles.asinText, { color: colors.textSecondary }]}>
-                        ASIN: {product.asin}
-                    </ThemedText>
-                )}
             </View>
         </Pressable>
     );
@@ -145,25 +159,25 @@ export function ProductCard({ product, onPress }: ProductCardProps) {
 const styles = StyleSheet.create({
     card: {
         flexDirection: 'row',
-        padding: 14,
-        marginBottom: 14,
-        marginHorizontal: 2,
-        borderRadius: 16,
-        borderWidth: 1.5,
-        gap: 14,
+        padding: 18,
+        marginBottom: 16,
+        marginHorizontal: 4,
+        borderRadius: 20,
+        borderWidth: 1,
+        gap: 16,
+        overflow: 'visible',
+        position: 'relative',
         ...Platform.select({
             ios: {
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.1,
-                shadowRadius: 12,
+                shadowOffset: { width: 0, height: 6 },
+                shadowRadius: 16,
             },
             android: {
-                elevation: 6,
+                elevation: 8,
             },
             web: {
-                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                transition: 'all 0.25s ease',
+                boxShadow: '0 6px 24px rgba(0,0,0,0.08)',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 cursor: 'pointer',
             },
         }),
@@ -172,12 +186,24 @@ const styles = StyleSheet.create({
         position: 'relative',
     },
     imageContainer: {
-        width: 110,
-        height: 130,
-        borderRadius: 12,
+        width: 120,
+        height: 140,
+        borderRadius: 16,
         overflow: 'hidden',
         justifyContent: 'center',
         alignItems: 'center',
+        ...Platform.select({
+            ios: {
+                shadowOffset: { width: 0, height: 4 },
+                shadowRadius: 12,
+            },
+            android: {
+                elevation: 6,
+            },
+            web: {
+                boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+            },
+        }),
     },
     productImage: {
         width: '100%',
@@ -190,117 +216,154 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     placeholderIcon: {
-        fontSize: 32,
+        fontSize: 36,
+        opacity: 0.5,
     },
     positionBadge: {
         position: 'absolute',
-        top: -6,
-        right: -6,
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 10,
-        minWidth: 32,
+        top: 12,
+        left: 12,
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: 12,
+        minWidth: 36,
         alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 2,
+        borderColor: '#FFFFFF',
+        zIndex: 10,
         ...Platform.select({
             ios: {
-                shadowColor: '#FF9900',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.4,
-                shadowRadius: 6,
+                shadowOffset: { width: 0, height: 3 },
+                shadowOpacity: 0.5,
+                shadowRadius: 8,
             },
             android: {
-                elevation: 4,
+                elevation: 6,
+            },
+            web: {
+                boxShadow: '0 3px 12px rgba(255, 153, 0, 0.4)',
             },
         }),
     },
     positionText: {
         color: '#FFFFFF',
-        fontSize: 11,
-        fontWeight: '800',
-        letterSpacing: 0.5,
+        fontSize: 12,
+        fontWeight: '900',
+        letterSpacing: 0.3,
     },
     medalBadge: {
         position: 'absolute',
-        bottom: -4,
-        left: -4,
-        width: 28,
-        height: 28,
-        borderRadius: 14,
+        bottom: -6,
+        left: -6,
+        width: 32,
+        height: 32,
+        borderRadius: 16,
         alignItems: 'center',
         justifyContent: 'center',
+        borderWidth: 2,
+        borderColor: '#FFFFFF',
+        ...Platform.select({
+            ios: {
+                shadowOffset: { width: 0, height: 3 },
+                shadowOpacity: 0.5,
+                shadowRadius: 8,
+            },
+            android: {
+                elevation: 6,
+            },
+            web: {
+                boxShadow: '0 3px 12px rgba(0,0,0,0.3)',
+            },
+        }),
     },
     medalText: {
-        fontSize: 14,
+        fontSize: 16,
     },
     infoSection: {
         flex: 1,
         justifyContent: 'space-between',
-        gap: 6,
+        gap: 8,
+        paddingVertical: 2,
     },
     productTitle: {
-        fontSize: 15,
-        fontWeight: '600',
-        lineHeight: 21,
-        letterSpacing: -0.2,
+        fontSize: 16,
+        fontWeight: '700',
+        lineHeight: 22,
+        letterSpacing: -0.3,
+        marginBottom: 2,
     },
     ratingRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 4,
+        gap: 6,
         flexWrap: 'wrap',
+        marginTop: 4,
     },
     starsText: {
-        fontSize: 13,
-        letterSpacing: 1,
+        fontSize: 14,
+        letterSpacing: 1.5,
     },
     ratingValue: {
-        fontSize: 13,
-        fontWeight: '700',
+        fontSize: 14,
+        fontWeight: '800',
+        marginLeft: 2,
     },
     reviewCount: {
         fontSize: 12,
+        fontWeight: '500',
+        marginLeft: 2,
     },
     priceSection: {
-        marginTop: 4,
+        marginTop: 8,
+        marginBottom: 4,
     },
     priceRow: {
         flexDirection: 'row',
-        alignItems: 'flex-start',
+        alignItems: 'baseline',
+        gap: 2,
     },
     priceSymbol: {
-        fontSize: 13,
-        fontWeight: '500',
-        marginTop: 2,
+        fontSize: 16,
+        fontWeight: '600',
+        marginRight: 1,
     },
     priceValue: {
-        fontSize: 26,
-        fontWeight: '700',
-        letterSpacing: -1,
-        lineHeight: 28,
+        fontSize: 28,
+        fontWeight: '800',
+        letterSpacing: -1.2,
+        lineHeight: 32,
     },
     priceCents: {
-        fontSize: 13,
-        fontWeight: '500',
-        marginTop: 2,
+        fontSize: 14,
+        fontWeight: '600',
+        marginLeft: 1,
     },
     noPriceText: {
         fontSize: 14,
         fontStyle: 'italic',
+        fontWeight: '500',
     },
     linkRow: {
-        marginTop: 6,
+        marginTop: 8,
     },
     amazonBadge: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 10,
-        paddingVertical: 6,
-        borderRadius: 8,
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+        borderRadius: 10,
         alignSelf: 'flex-start',
+        ...Platform.select({
+            web: {
+                transition: 'all 0.2s ease',
+            },
+        }),
     },
     amazonText: {
-        fontSize: 12,
-        fontWeight: '600',
+        fontSize: 13,
+        fontWeight: '700',
+        letterSpacing: 0.2,
     },
     asinText: {
         fontSize: 10,

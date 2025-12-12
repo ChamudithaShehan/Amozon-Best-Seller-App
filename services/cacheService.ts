@@ -86,13 +86,20 @@ export const cacheService = {
         try {
             const allKeys = await AsyncStorage.getAllKeys();
             const cacheKeys = allKeys.filter(key => key.startsWith(CACHE_PREFIX));
+            
+            // Also clear the all categories cache key
+            const allCategoriesKey = 'all_categories_data';
+            if (allKeys.includes(allCategoriesKey)) {
+                cacheKeys.push(allCategoriesKey);
+            }
 
             if (cacheKeys.length > 0) {
                 await AsyncStorage.multiRemove(cacheKeys);
-                console.log(`[Cache] Cleared ${cacheKeys.length} cached categories`);
+                console.log(`[Cache] Cleared ${cacheKeys.length} cached entries`);
             }
         } catch (error) {
             console.error('[Cache] Error clearing all caches:', error);
+            throw error; // Re-throw so caller can handle it
         }
     },
 

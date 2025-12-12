@@ -62,7 +62,8 @@ export default function ExploreScreen() {
     trendingProducts,
     priceInsights,
     topRatedProducts,
-    lastUpdated
+    lastUpdated,
+    refetchAll
   } = useAllCategories();
 
   // Modal states
@@ -91,7 +92,9 @@ export default function ExploreScreen() {
             setClearingCache(true);
             try {
               await cacheService.clearAll();
-              Alert.alert('Success', 'All cached data has been cleared.');
+              // Refetch all data to update the UI immediately
+              await refetchAll();
+              Alert.alert('Success', 'All cached data has been cleared and fresh data is being loaded.');
             } catch (error) {
               Alert.alert('Error', 'Failed to clear cache. Please try again.');
               console.error('[Explore] Error clearing cache:', error);

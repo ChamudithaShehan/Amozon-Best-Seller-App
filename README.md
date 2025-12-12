@@ -9,8 +9,10 @@ A modern React Native mobile application built with Expo that allows you to expl
 - 📈 **Trending Products**: View the #1 products from all categories
 - 💰 **Price Insights**: Analyze pricing data across categories
 - ⭐ **Top Rated Products**: Discover highest-rated products
-- 🌓 **Dark Mode**: Full theme support with system, light, and dark modes
-- 💾 **Smart Caching**: Efficient data caching for faster load times
+- 🌓 **Theme Support**: Full theme support with system, light, and dark modes (all components properly themed)
+- 🎨 **Animated Splash Screen**: Beautiful animated splash screen on app launch
+- 💾 **Smart Caching**: Efficient 24-hour data caching for faster load times
+- 🗑️ **Cache Management**: Clear all cached data with one tap
 - 🔄 **Pull to Refresh**: Refresh product data with a simple pull gesture
 - 📱 **Cross-Platform**: Works on iOS, Android, and Web
 
@@ -119,6 +121,7 @@ amozon-new/
 ├── components/
 │   ├── CategoryChips.tsx      # Category filter buttons
 │   ├── ProductCard.tsx        # Product display card
+│   ├── SplashScreen.tsx       # Animated splash screen
 │   ├── TrendingModal.tsx      # Trending products modal
 │   ├── PriceInsightsModal.tsx # Price insights modal
 │   ├── TopRatedModal.tsx      # Top rated products modal
@@ -172,15 +175,22 @@ The app supports 11 Amazon bestseller categories:
 - **Trending Products**: See top #1 products from all categories
 - **Price Insights**: View average pricing across categories
 - **Top Rated**: Discover highest-rated products
-- **Settings**: Configure theme preferences (Light/Dark/System)
+- **Settings**: 
+  - Configure theme preferences (Light/Dark/System)
+  - Clear all cached data with one tap
+  - View app information and version
 
 ## Caching Strategy
 
 The app implements intelligent caching:
 - Products are cached locally using AsyncStorage
+- Cache duration: 24 hours per category
 - Cache is checked before making API requests
+- Automatic cleanup of expired cache entries on app startup
 - Force refresh available via pull-to-refresh
+- Manual cache clearing available in Settings
 - Cache helps reduce API calls and improve performance
+- Stale cache used as fallback if API fails
 
 ## Environment Setup
 
@@ -234,6 +244,15 @@ For issues related to:
 - **Rainforest API**: Visit [Rainforest API Documentation](https://docs.rainforestapi.com/)
 - **Expo**: Visit [Expo Documentation](https://docs.expo.dev/)
 - **Project Issues**: Open an issue in the repository
+
+## Recent Updates
+
+### Version 1.0.0
+- ✨ Added animated splash screen with smooth transitions
+- 🎨 Fixed light mode theme support across all components
+- 🗑️ Added cache management with clear all cache functionality
+- 🐛 Improved theme consistency throughout the app
+- ⚡ Enhanced app initialization and loading experience
 
 ## Version
 
