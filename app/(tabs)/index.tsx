@@ -13,7 +13,7 @@ import { useBestsellers } from '@/hooks/useBestsellers';
 import { BestsellerProduct } from '@/services/rainforestApi';
 
 export default function HomeScreen() {
-  const [selectedCategory, setSelectedCategory] = useState('bestsellers_appliances');
+  const [selectedCategory, setSelectedCategory] = useState('bestsellers_fashion');
   const { bestsellers, loading, error, refetch, fromCache, lastUpdated } = useBestsellers({ categoryId: selectedCategory });
   const { colorScheme } = useTheme();
   const colors = Colors[colorScheme];

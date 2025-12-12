@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Platform, StyleSheet, Switch, TouchableOpacity, View } from 'react-native';
+import { Alert, Platform, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { PriceInsightsModal } from '@/components/PriceInsightsModal';
@@ -12,6 +12,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAllCategories } from '@/hooks/useAllCategories';
+import { cacheService } from '@/services/cacheService';
 
 interface FeatureCardProps {
   icon: string;
@@ -68,9 +69,39 @@ export default function ExploreScreen() {
   const [trendingModalVisible, setTrendingModalVisible] = useState(false);
   const [priceModalVisible, setPriceModalVisible] = useState(false);
   const [topRatedModalVisible, setTopRatedModalVisible] = useState(false);
+  const [clearingCache, setClearingCache] = useState(false);
 
   const handleBrowseCategories = () => {
     router.push('/');
+  };
+
+  const handleClearCache = () => {
+    Alert.alert(
+      'Clear All Cache',
+      'This will remove all cached bestseller data. The app will fetch fresh data from the API on next use.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Clear',
+          style: 'destructive',
+          onPress: async () => {
+            setClearingCache(true);
+            try {
+              await cacheService.clearAll();
+              Alert.alert('Success', 'All cached data has been cleared.');
+            } catch (error) {
+              Alert.alert('Error', 'Failed to clear cache. Please try again.');
+              console.error('[Explore] Error clearing cache:', error);
+            } finally {
+              setClearingCache(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
   const getLastUpdatedText = () => {
@@ -89,10 +120,32 @@ export default function ExploreScreen() {
   return (
     <ParallaxScrollView
       headerBackgroundColor={{
-        light: colors.background,
-        dark: colors.background
+        light: colors.gradientStart,
+        dark: colors.gradientEnd
       }}
-      headerImage={undefined}>
+      headerImage={
+        <View style={styles.headerContent}>
+          <View style={[styles.headerGradient, { backgroundColor: colorScheme === 'light' ? colors.gradientStart : colors.gradientEnd }]}>
+            <View style={styles.logoContainer}>
+              <View style={[styles.logoIcon, { backgroundColor: 'rgba(255, 255, 255, 0.15)' }]}>
+                <Text style={styles.logoEmoji}>🚀</Text>
+              </View>
+              <View style={styles.logoTextContainer}>
+                <Text style={styles.headerTitle}>Features</Text>
+                <View style={[styles.smileLine, { backgroundColor: colors.accent }]} />
+              </View>
+            </View>
+            <Text style={styles.headerSubtitle}>Capabilities Explorer</Text>
+            {lastUpdated && (
+              <View style={styles.headerInfoRow}>
+                <Text style={styles.headerUpdateTime}>
+                  Updated {getLastUpdatedText()}
+                </Text>
+              </View>
+            )}
+          </View>
+        </View>
+      }>
 
       {/* Title Section */}
       <ThemedView style={styles.titleContainer}>
@@ -203,6 +256,30 @@ export default function ExploreScreen() {
             </TouchableOpacity>
           ))}
         </View>
+      </View>
+
+      {/* Clear Cache Button */}
+      <View style={[styles.settingsCard, {
+        backgroundColor: colors.cardBackground,
+        borderColor: colors.border
+      }]}>
+        <TouchableOpacity
+          onPress={handleClearCache}
+          disabled={clearingCache}
+          style={styles.clearCacheButton}
+        >
+          <View style={[styles.settingIconBg, { backgroundColor: colors.primeLight }]}>
+            <ThemedText style={styles.settingIcon}>🗑️</ThemedText>
+          </View>
+          <View style={styles.settingInfo}>
+            <ThemedText style={styles.settingLabel}>
+              {clearingCache ? 'Clearing...' : 'Clear All Cache'}
+            </ThemedText>
+            <ThemedText style={[styles.settingDescription, { color: colors.textSecondary }]}>
+              Remove all cached bestseller data
+            </ThemedText>
+          </View>
+        </TouchableOpacity>
       </View>
 
       {/* App Info Footer */}
@@ -410,5 +487,86 @@ const styles = StyleSheet.create({
   appInfoValue: {
     fontSize: 13,
     fontWeight: '600',
+  },
+  clearCacheButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  headerContent: {
+    flex: 1,
+    width: '100%',
+  },
+  headerGradient: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 28,
+  },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    marginBottom: 6,
+  },
+  logoIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoEmoji: {
+    fontSize: 24,
+  },
+  logoTextContainer: {
+    alignItems: 'flex-start',
+  },
+  headerTitle: {
+    fontSize: 44,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: -1.5,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 6,
+  },
+  smileLine: {
+    width: 60,
+    height: 4,
+    borderRadius: 2,
+    marginTop: -4,
+    marginLeft: 'auto',
+  },
+  headerSubtitle: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    fontWeight: '600',
+    opacity: 0.95,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+    marginTop: 4,
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  headerInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 14,
+    marginTop: 16,
+    flexWrap: 'wrap',
+  },
+  headerUpdateTime: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '500',
+    opacity: 0.85,
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
 });

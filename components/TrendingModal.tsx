@@ -47,8 +47,18 @@ export function TrendingModal({ visible, onClose, trendingProducts, colorScheme 
                     </ThemedText>
 
                     {/* Products List */}
-                    <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-                        {trendingProducts.map((item, index) => (
+                    <ScrollView 
+                        style={styles.scrollView} 
+                        contentContainerStyle={styles.scrollContent}
+                        showsVerticalScrollIndicator={false}
+                        nestedScrollEnabled={true}
+                    >
+                        {trendingProducts.length === 0 ? (
+                            <View style={styles.emptyState}>
+                                <ThemedText style={styles.emptyText}>No trending products available</ThemedText>
+                            </View>
+                        ) : (
+                            trendingProducts.map((item, index) => (
                             <View
                                 key={item.product.asin || index}
                                 style={[styles.productCard, {
@@ -93,7 +103,8 @@ export function TrendingModal({ visible, onClose, trendingProducts, colorScheme 
                                     )}
                                 </View>
                             </View>
-                        ))}
+                            ))
+                        )}
                     </ScrollView>
                 </ThemedView>
             </View>
@@ -111,7 +122,9 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 24,
         borderTopRightRadius: 24,
         padding: 20,
-        maxHeight: '85%',
+        maxHeight: '100%',
+        minHeight: '100%',
+        width: '100%',
         ...Platform.select({
             ios: {
                 shadowColor: '#000',
@@ -151,6 +164,20 @@ const styles = StyleSheet.create({
     },
     scrollView: {
         flex: 1,
+        minHeight: 0,
+    },
+    scrollContent: {
+        paddingBottom: 20,
+    },
+    emptyState: {
+        padding: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    emptyText: {
+        fontSize: 14,
+        color: '#999',
+        textAlign: 'center',
     },
     productCard: {
         flexDirection: 'row',

@@ -33,7 +33,8 @@ export const cacheService = {
 
             if (age > CACHE_DURATION_MS) {
                 console.log(`[Cache] Cache expired for ${categoryId} (age: ${Math.round(age / 1000 / 60)} minutes)`);
-                // Don't delete - we'll update it when new data comes in
+                // Delete expired cache immediately to free storage
+                await AsyncStorage.removeItem(cacheKey);
                 return null;
             }
 
@@ -92,6 +93,43 @@ export const cacheService = {
             }
         } catch (error) {
             console.error('[Cache] Error clearing all caches:', error);
+        }
+    },
+
+    /**
+     * Remove all expired cache entries (older than 24 hours)
+     * This helps prevent storage bloat by cleaning up stale data
+     */
+    async cleanupExpired(): Promise<number> {
+        try {
+            const allKeys = await AsyncStorage.getAllKeys();
+            const cacheKeys = allKeys.filter(key => key.startsWith(CACHE_PREFIX));
+            const expiredKeys: string[] = [];
+            const now = Date.now();
+
+            for (const key of cacheKeys) {
+                const cachedJson = await AsyncStorage.getItem(key);
+                if (cachedJson) {
+                    const cached = JSON.parse(cachedJson);
+                    const age = now - cached.timestamp;
+
+                    if (age > CACHE_DURATION_MS) {
+                        expiredKeys.push(key);
+                    }
+                }
+            }
+
+            if (expiredKeys.length > 0) {
+                await AsyncStorage.multiRemove(expiredKeys);
+                console.log(`[Cache] Cleaned up ${expiredKeys.length} expired cache entries`);
+            } else {
+                console.log('[Cache] No expired entries to clean up');
+            }
+
+            return expiredKeys.length;
+        } catch (error) {
+            console.error('[Cache] Error during cleanup:', error);
+            return 0;
         }
     },
 

@@ -55,7 +55,12 @@ export function TopRatedModal({ visible, onClose, topRatedProducts, colorScheme 
                     </ThemedText>
 
                     {/* Products List */}
-                    <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+                    <ScrollView 
+                        style={styles.scrollView} 
+                        contentContainerStyle={styles.scrollContent}
+                        showsVerticalScrollIndicator={false}
+                        nestedScrollEnabled={true}
+                    >
                         {topRatedProducts.map((item, index) => (
                             <View
                                 key={item.product.asin || index}
@@ -129,7 +134,9 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 24,
         borderTopRightRadius: 24,
         padding: 20,
-        maxHeight: '85%',
+        maxHeight: '100%',
+        minHeight: '100%',
+        width: '100%',
         ...Platform.select({
             ios: {
                 shadowColor: '#000',
@@ -169,6 +176,10 @@ const styles = StyleSheet.create({
     },
     scrollView: {
         flex: 1,
+        minHeight: 0,
+    },
+    scrollContent: {
+        paddingBottom: 20,
     },
     productCard: {
         flexDirection: 'row',

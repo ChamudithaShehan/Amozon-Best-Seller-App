@@ -1,6 +1,6 @@
 import { cacheService } from '@/services/cacheService';
 import { BestsellerProduct, rainforestApi } from '@/services/rainforestApi';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface UseBestsellersReturn {
   bestsellers: BestsellerProduct[];
@@ -28,8 +28,10 @@ export function useBestsellers(
   const [error, setError] = useState<string | null>(null);
   const [fromCache, setFromCache] = useState<boolean>(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const cacheCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const CACHE_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
 
-  const categoryId = options.categoryId || 'bestsellers_appliances';
+  const categoryId = options.categoryId || 'bestsellers_fashion';
 
   const fetchBestsellers = useCallback(async (forceRefresh: boolean = false) => {
     setLoading(true);
@@ -61,9 +63,10 @@ export function useBestsellers(
 
       // Store in cache for future use
       if (products.length > 0) {
+        const fetchedAt = Date.now();
         await cacheService.set<CachedBestsellersData>(categoryId, {
           bestsellers: products,
-          fetchedAt: Date.now(),
+          fetchedAt,
         });
         console.log(`[useBestsellers] Cached ${products.length} products for ${categoryId}`);
       }
@@ -96,9 +99,35 @@ export function useBestsellers(
     await fetchBestsellers(true);
   }, [fetchBestsellers]);
 
+  // Initial fetch
   useEffect(() => {
     fetchBestsellers(false);
   }, [fetchBestsellers]);
+
+  // Periodically check if cache has expired and refresh if needed
+  useEffect(() => {
+    if (!lastUpdated || !fromCache) return;
+
+    const checkAndRefreshIfExpired = () => {
+      const age = Date.now() - lastUpdated.getTime();
+
+      if (age > CACHE_DURATION_MS) {
+        console.log(`[useBestsellers] Cache expired for ${categoryId}, auto-refreshing...`);
+        fetchBestsellers(false); // This will delete expired cache and fetch fresh data
+      }
+    };
+
+    // Check every hour if we're using cached data
+    cacheCheckIntervalRef.current = setInterval(checkAndRefreshIfExpired, 60 * 60 * 1000); // Every hour
+    // Also check immediately in case cache expired while component was mounted
+    checkAndRefreshIfExpired();
+
+    return () => {
+      if (cacheCheckIntervalRef.current) {
+        clearInterval(cacheCheckIntervalRef.current);
+      }
+    };
+  }, [fromCache, lastUpdated, categoryId, fetchBestsellers]);
 
   return {
     bestsellers,

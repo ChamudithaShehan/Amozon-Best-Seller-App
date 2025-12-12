@@ -13,17 +13,12 @@ interface Category {
 // These are VERIFIED WORKING category IDs for amazon.com
 // Format: bestsellers_[amazon_category_slug]
 const CATEGORIES: Category[] = [
+    { id: 'bestsellers_fashion', name: '👗 Clothing & Jewelry' },
     { id: 'bestsellers_appliances', name: '🏠 Appliances' },
-    { id: 'bestsellers_electronics', name: '📱 Electronics' },
-    { id: 'bestsellers_books', name: '📚 Books' },
-    { id: 'bestsellers_sports', name: '⚽ Sports' },
-    { id: 'bestsellers_home', name: '🛋️ Home' },
-    { id: 'bestsellers_kitchen', name: '🍳 Kitchen' },
-    { id: 'bestsellers_garden', name: '🌿 Garden' },
-    { id: 'bestsellers_office', name: '💼 Office' },
-    { id: 'bestsellers_videogames', name: '🎮 Video Games' },
-    { id: 'bestsellers_music', name: '🎵 Music' },
-    { id: 'bestsellers_movies', name: '🎬 Movies' },
+    { id: 'bestsellers_toys', name: '🧸 Toys & Games' },
+    { id: 'bestsellers_kitchen', name: '🍳 Kitchen & Dining' },
+    { id: 'bestsellers_sports', name: '⚽ Sports & Outdoors' },
+    { id: 'bestsellers_automotive', name: '🚗 Automotive' },
 ];
 
 interface CategoryChipsProps {

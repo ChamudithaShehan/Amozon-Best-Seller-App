@@ -86,7 +86,12 @@ export function PriceInsightsModal({ visible, onClose, priceInsights, colorSchem
                     {/* Category Breakdown */}
                     <ThemedText style={styles.sectionTitle}>By Category</ThemedText>
 
-                    <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+                    <ScrollView 
+                        style={styles.scrollView} 
+                        contentContainerStyle={styles.scrollContent}
+                        showsVerticalScrollIndicator={false}
+                        nestedScrollEnabled={true}
+                    >
                         {priceInsights.filter(p => p.avgPrice > 0).map((stats, index) => (
                             <View
                                 key={stats.category}
@@ -154,7 +159,9 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 24,
         borderTopRightRadius: 24,
         padding: 20,
-        maxHeight: '85%',
+        maxHeight: '100%',
+        minHeight: '100%',
+        width: '100%',
         ...Platform.select({
             ios: {
                 shadowColor: '#000',
@@ -222,6 +229,10 @@ const styles = StyleSheet.create({
     },
     scrollView: {
         flex: 1,
+        minHeight: 0,
+    },
+    scrollContent: {
+        paddingBottom: 20,
     },
     categoryCard: {
         padding: 14,
