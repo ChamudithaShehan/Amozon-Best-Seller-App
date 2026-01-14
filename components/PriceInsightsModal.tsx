@@ -3,7 +3,7 @@ import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import React from 'react';
-import { Modal, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Modal, Platform, SafeAreaView, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 interface PriceStats {
     category: string;
@@ -39,11 +39,12 @@ export function PriceInsightsModal({ visible, onClose, priceInsights, colorSchem
         <Modal
             visible={visible}
             animationType="slide"
-            transparent={true}
+            transparent={false}
             onRequestClose={onClose}
+            presentationStyle="fullScreen"
         >
-            <View style={styles.overlay}>
-                <ThemedView style={[styles.modalContent, { backgroundColor: colors.cardBackground }]}>
+            <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+                <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
                     {/* Header */}
                     <View style={styles.header}>
                         <View style={styles.headerTitle}>
@@ -86,8 +87,8 @@ export function PriceInsightsModal({ visible, onClose, priceInsights, colorSchem
                     {/* Category Breakdown */}
                     <ThemedText style={styles.sectionTitle}>By Category</ThemedText>
 
-                    <ScrollView 
-                        style={styles.scrollView} 
+                    <ScrollView
+                        style={styles.scrollView}
                         contentContainerStyle={styles.scrollContent}
                         showsVerticalScrollIndicator={false}
                         nestedScrollEnabled={true}
@@ -144,35 +145,19 @@ export function PriceInsightsModal({ visible, onClose, priceInsights, colorSchem
                         ))}
                     </ScrollView>
                 </ThemedView>
-            </View>
+            </SafeAreaView>
         </Modal>
     );
 }
 
 const styles = StyleSheet.create({
-    overlay: {
+    container: {
         flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        justifyContent: 'flex-end',
     },
     modalContent: {
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
-        padding: 20,
-        maxHeight: '100%',
-        minHeight: '100%',
-        width: '100%',
-        ...Platform.select({
-            ios: {
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: -4 },
-                shadowOpacity: 0.2,
-                shadowRadius: 16,
-            },
-            android: {
-                elevation: 16,
-            },
-        }),
+        flex: 1,
+        paddingHorizontal: 16,
+        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 0,
     },
     header: {
         flexDirection: 'row',

@@ -1,5 +1,5 @@
 import type { PropsWithChildren, ReactElement } from 'react';
-import { StyleSheet } from 'react-native';
+import { Dimensions, Platform, StyleSheet } from 'react-native';
 import Animated, {
   interpolate,
   useAnimatedRef,
@@ -11,7 +11,14 @@ import { ThemedView } from '@/components/themed-view';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
-const HEADER_HEIGHT = 250;
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+// Responsive header height based on screen width
+const HEADER_HEIGHT = Platform.select({
+  ios: Math.min(220, SCREEN_WIDTH * 0.55),
+  android: Math.min(200, SCREEN_WIDTH * 0.5),
+  default: 250,
+});
 
 type Props = PropsWithChildren<{
   headerImage: ReactElement;
@@ -27,6 +34,7 @@ export default function ParallaxScrollView({
   const colorScheme = useColorScheme() ?? 'light';
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollOffset(scrollRef);
+
   const headerAnimatedStyle = useAnimatedStyle(() => {
     return {
       transform: [
@@ -48,7 +56,9 @@ export default function ParallaxScrollView({
     <Animated.ScrollView
       ref={scrollRef}
       style={{ backgroundColor, flex: 1 }}
-      scrollEventThrottle={16}>
+      scrollEventThrottle={16}
+      showsVerticalScrollIndicator={false}
+    >
       <Animated.View
         style={[
           styles.header,
@@ -72,9 +82,10 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 20,
-    paddingTop: 24,
-    gap: 16,
+    paddingHorizontal: 16,
+    paddingTop: 20,
+    paddingBottom: 16,
+    gap: 12,
     overflow: 'hidden',
   },
 });

@@ -1,5 +1,6 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
-import { ActivityIndicator, FlatList, Platform, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Dimensions, FlatList, Platform, RefreshControl, StyleSheet, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 
 import { CategoryChips } from '@/components/CategoryChips';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
@@ -7,7 +8,7 @@ import { ProductCard } from '@/components/ProductCard';
 import { ShimmerLoader } from '@/components/ShimmerLoader';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Colors } from '@/constants/theme';
+import { BorderRadius, Colors, Spacing } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useBestsellers } from '@/hooks/useBestsellers';
 import { BestsellerProduct } from '@/services/rainforestApi';
@@ -17,6 +18,8 @@ export default function HomeScreen() {
   const { bestsellers, loading, error, refetch, fromCache, lastUpdated } = useBestsellers({ categoryId: selectedCategory });
   const { colorScheme } = useTheme();
   const colors = Colors[colorScheme];
+  const { width } = useWindowDimensions();
+  const isSmallDevice = width < 380;
 
   // Format last updated time
   const getLastUpdatedText = () => {
@@ -48,54 +51,80 @@ export default function HomeScreen() {
       }}
       headerImage={
         <View style={styles.headerContent}>
-          {/* Gradient Overlay */}
-          <View style={[styles.headerGradient, { backgroundColor: colorScheme === 'light' ? colors.gradientStart : colors.gradientEnd }]}>
-            {/* Logo Section */}
-            <View style={styles.logoContainer}>
-              <View style={[styles.logoIcon, { backgroundColor: 'rgba(255, 255, 255, 0.15)' }]}>
-                <ThemedText style={styles.logoEmoji}>📊</ThemedText>
-              </View>
-              <View style={styles.logoTextContainer}>
-                <ThemedText style={styles.headerTitle}>amazon</ThemedText>
-                <View style={[styles.smileLine, { backgroundColor: colors.accent }]} />
-              </View>
-            </View>
+          {/* Premium Gradient Background */}
+          <LinearGradient
+            colors={colorScheme === 'light'
+              ? ['#FF9900', '#FF6B00', '#FF5500']
+              : ['#1A1A2E', '#16213E', '#0F3460']
+            }
+            style={styles.headerGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            {/* Decorative Elements */}
+            <View style={styles.decorativeCircle1} />
+            <View style={styles.decorativeCircle2} />
+            <View style={styles.decorativeCircle3} />
 
-            {/* Subtitle */}
-            <ThemedText style={styles.headerSubtitle}>Bestsellers Explorer</ThemedText>
-
-            {/* Status and Update Info */}
-            {!fromCache && (
-              <View style={styles.headerInfoRow}>
-                <View style={[styles.headerStatusBadge, { backgroundColor: 'rgba(255, 255, 255, 0.25)' }]}>
-                  <View style={[styles.headerLiveDot, { backgroundColor: '#FFFFFF' }]} />
-                  <ThemedText style={styles.headerStatusText}>LIVE</ThemedText>
+            {/* Content Container */}
+            <View style={styles.headerInner}>
+              {/* Logo Section */}
+              <View style={styles.logoContainer}>
+                <View style={styles.logoIconWrapper}>
+                  <LinearGradient
+                    colors={['rgba(255, 255, 255, 0.3)', 'rgba(255, 255, 255, 0.1)']}
+                    style={styles.logoGradient}
+                  />
+                  <ThemedText style={styles.logoEmoji}>📊</ThemedText>
                 </View>
+                <View style={styles.logoTextContainer}>
+                  <ThemedText style={styles.headerTitle}>amazon</ThemedText>
+                  {/* <View style={styles.smileContainer}>
+                    <View style={styles.smileLine} />
+                    <View style={styles.smileArrow} />
+                  </View> */}
+                </View>
+              </View>
+
+              {/* Subtitle */}
+              <ThemedText style={styles.headerSubtitle}>BESTSELLERS EXPLORER</ThemedText>
+
+              {/* Status and Update Info */}
+              <View style={styles.headerInfoRow}>
+                {!fromCache && (
+                  <View style={styles.liveBadge}>
+                    <View style={styles.liveDotOuter}>
+                      <View style={styles.liveDotInner} />
+                    </View>
+                    <ThemedText style={styles.liveText}>LIVE</ThemedText>
+                  </View>
+                )}
                 {lastUpdated && (
-                  <ThemedText style={styles.headerUpdateTime}>
-                    Updated {getLastUpdatedText()}
-                  </ThemedText>
+                  <View style={styles.updateBadge}>
+                    <ThemedText style={styles.updateIcon}>🕐</ThemedText>
+                    <ThemedText style={styles.updateText}>
+                      {getLastUpdatedText()}
+                    </ThemedText>
+                  </View>
                 )}
               </View>
-            )}
-            {fromCache && lastUpdated && (
-              <View style={styles.headerInfoRow}>
-                <ThemedText style={styles.headerUpdateTime}>
-                  Updated {getLastUpdatedText()}
-                </ThemedText>
-              </View>
-            )}
 
-            {/* Stats Row */}
-            <View style={styles.statsRow}>
-              <View style={[styles.statBadge, { backgroundColor: 'rgba(255, 255, 255, 0.15)' }]}>
-                <ThemedText style={styles.statText}>🔥 Updated Daily</ThemedText>
-              </View>
-              <View style={[styles.statBadge, { backgroundColor: 'rgba(255, 255, 255, 0.15)' }]}>
-                <ThemedText style={styles.statText}>⭐ Top 50 Products</ThemedText>
-              </View>
+              {/* Stats Row - hide on small screens */}
+              {!isSmallDevice && (
+                <View style={styles.statsRow}>
+                  <View style={styles.statItem}>
+                    <ThemedText style={styles.statIcon}>🔥</ThemedText>
+                    <ThemedText style={styles.statLabel}>Updated Daily</ThemedText>
+                  </View>
+                  <View style={styles.statDivider} />
+                  <View style={styles.statItem}>
+                    <ThemedText style={styles.statIcon}>⭐</ThemedText>
+                    <ThemedText style={styles.statLabel}>Top 50 Products</ThemedText>
+                  </View>
+                </View>
+              )}
             </View>
-          </View>
+          </LinearGradient>
         </View>
       }>
 
@@ -114,10 +143,14 @@ export default function HomeScreen() {
 
       {/* Error State */}
       {error && (
-        <ThemedView style={[styles.errorContainer, {
-          backgroundColor: colorScheme === 'light' ? 'rgba(229, 62, 62, 0.08)' : 'rgba(255, 107, 107, 0.12)',
-          borderColor: colorScheme === 'light' ? 'rgba(229, 62, 62, 0.15)' : 'rgba(255, 107, 107, 0.25)',
+        <View style={[styles.errorContainer, {
+          backgroundColor: colors.errorLight,
+          borderColor: colorScheme === 'light' ? 'rgba(229, 62, 62, 0.15)' : 'rgba(248, 113, 113, 0.25)',
         }]}>
+          <LinearGradient
+            colors={['transparent', colors.errorLight]}
+            style={styles.errorGradient}
+          />
           <View style={styles.errorIconContainer}>
             <ThemedText style={styles.errorIcon}>⚠️</ThemedText>
           </View>
@@ -134,49 +167,75 @@ export default function HomeScreen() {
             onPress={refetch}
             activeOpacity={0.8}
           >
+            <ThemedText style={styles.retryIcon}>🔄</ThemedText>
             <ThemedText style={styles.retryText}>Retry</ThemedText>
           </TouchableOpacity>
-        </ThemedView>
+        </View>
       )}
 
       {/* Empty State */}
       {!loading && bestsellers.length === 0 && !error && (
-        <ThemedView style={styles.emptyContainer}>
-          <ThemedText style={styles.emptyIcon}>📦</ThemedText>
+        <View style={[styles.emptyContainer, { backgroundColor: colors.cardBackground }]}>
+          <View style={[styles.emptyIconBg, { backgroundColor: colors.primeLight }]}>
+            <ThemedText style={styles.emptyIcon}>📦</ThemedText>
+          </View>
           <ThemedText style={styles.emptyTitle}>No products found</ThemedText>
           <ThemedText style={[styles.emptyText, { color: colors.textSecondary }]}>
-            Try selecting a different category
+            Try selecting a different category to explore more products
           </ThemedText>
-        </ThemedView>
+          <TouchableOpacity
+            style={[styles.emptyButton, { backgroundColor: colors.prime }]}
+            onPress={() => setSelectedCategory('bestsellers_appliances')}
+          >
+            <ThemedText style={styles.emptyButtonText}>Browse Appliances</ThemedText>
+          </TouchableOpacity>
+        </View>
       )}
 
       {/* Products List */}
       {bestsellers.length > 0 && (
-        <FlatList
-          data={bestsellers}
-          renderItem={renderProduct}
-          keyExtractor={(item, index) => item.asin || `product-${index}`}
-          scrollEnabled={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={loading}
-              onRefresh={refetch}
-              tintColor={colors.tint}
-              colors={[colors.tint]}
-            />
-          }
-          contentContainerStyle={styles.listContainer}
-          ItemSeparatorComponent={() => <View style={{ height: 4 }} />}
-        />
+        <>
+          {/* Results Header */}
+          <View style={styles.resultsHeader}>
+            <ThemedText style={[styles.resultsCount, { color: colors.text }]}>
+              {bestsellers.length} Products
+            </ThemedText>
+            <View style={[styles.sortBadge, { backgroundColor: colors.chipBg }]}>
+              <ThemedText style={[styles.sortText, { color: colors.textSecondary }]}>
+                Sorted by Rank
+              </ThemedText>
+            </View>
+          </View>
+
+          <FlatList
+            data={bestsellers}
+            renderItem={renderProduct}
+            keyExtractor={(item, index) => item.asin || `product-${index}`}
+            scrollEnabled={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={loading}
+                onRefresh={refetch}
+                tintColor={colors.tint}
+                colors={[colors.tint]}
+              />
+            }
+            contentContainerStyle={styles.listContainer}
+            ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+          />
+        </>
       )}
 
       {/* Refreshing Overlay */}
       {loading && bestsellers.length > 0 && (
         <View style={styles.refreshingOverlay}>
-          <View style={[styles.refreshingBadge, { backgroundColor: colors.cardBackground }]}>
+          <View style={[styles.refreshingBadge, {
+            backgroundColor: colors.cardBackground,
+            borderColor: colors.border,
+          }]}>
             <ActivityIndicator size="small" color={colors.tint} />
-            <ThemedText style={[styles.refreshingText, { color: colors.textSecondary }]}>
-              Updating...
+            <ThemedText style={[styles.refreshingText, { color: colors.text }]}>
+              Updating products...
             </ThemedText>
           </View>
         </View>
@@ -184,6 +243,9 @@ export default function HomeScreen() {
     </ParallaxScrollView>
   );
 }
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const isSmallScreen = SCREEN_WIDTH < 380;
 
 const styles = StyleSheet.create({
   headerContent: {
@@ -194,31 +256,80 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingTop: 24,
-    paddingBottom: 28,
+    paddingHorizontal: isSmallScreen ? 16 : 20,
+    paddingTop: isSmallScreen ? 16 : 20,
+    paddingBottom: isSmallScreen ? 16 : 24,
+    overflow: 'hidden',
+  },
+  decorativeCircle1: {
+    position: 'absolute',
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    top: -50,
+    right: -50,
+  },
+  decorativeCircle2: {
+    position: 'absolute',
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    bottom: -30,
+    left: -30,
+  },
+  decorativeCircle3: {
+    position: 'absolute',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    top: 60,
+    left: 40,
+  },
+  headerInner: {
+    alignItems: 'center',
+    zIndex: 1,
   },
   logoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
-    marginBottom: 6,
+    gap: isSmallScreen ? 8 : 12,
+    marginBottom: isSmallScreen ? 4 : 8,
   },
-  logoIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
+  logoIconWrapper: {
+    width: isSmallScreen ? 40 : 48,
+    height: isSmallScreen ? 40 : 48,
+    borderRadius: BorderRadius.md,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.15,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  logoGradient: {
+    ...StyleSheet.absoluteFillObject,
   },
   logoEmoji: {
-    fontSize: 24,
+    fontSize: isSmallScreen ? 20 : 24,
   },
   logoTextContainer: {
     alignItems: 'flex-start',
   },
   headerTitle: {
-    fontSize: 44,
+    fontSize: isSmallScreen ? 32 : 40,
     fontWeight: '800',
     color: '#FFFFFF',
     letterSpacing: -1.5,
@@ -226,151 +337,186 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 6,
   },
+  smileContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: -6,
+    marginLeft: 30,
+  },
   smileLine: {
     width: 60,
     height: 4,
+    backgroundColor: '#FFD700',
     borderRadius: 2,
-    marginTop: -4,
-    marginLeft: 'auto',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#FFD700',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.6,
+        shadowRadius: 4,
+      },
+    }),
+  },
+  smileArrow: {
+    width: 0,
+    height: 0,
+    borderStyle: 'solid',
+    borderLeftWidth: 6,
+    borderRightWidth: 0,
+    borderTopWidth: 6,
+    borderLeftColor: '#FFD700',
+    borderRightColor: 'transparent',
+    borderTopColor: 'transparent',
+    marginLeft: -1,
+    marginTop: 4,
+    transform: [{ rotate: '95deg' }],
   },
   headerSubtitle: {
-    fontSize: 16,
-    color: '#FFFFFF',
-    fontWeight: '600',
-    opacity: 0.95,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
+    fontSize: isSmallScreen ? 10 : 12,
+    color: 'rgba(255, 255, 255, 0.95)',
+    fontWeight: '700',
+    letterSpacing: isSmallScreen ? 2 : 3,
     marginTop: 4,
-    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
     textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
+    textShadowRadius: 4,
   },
   headerInfoRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 14,
-    marginTop: 16,
-    flexWrap: 'wrap',
-  },
-  headerStatusBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 18,
-  },
-  headerStatusText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.8,
-  },
-  headerLiveDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
-  },
-  headerUpdateTime: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '500',
-    opacity: 0.85,
-    textShadowColor: 'rgba(0, 0, 0, 0.2)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 20,
-    justifyContent: 'center',
-  },
-  statBadge: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 18,
-  },
-  statText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '600',
-    letterSpacing: 0.3,
-  },
-  infoContainer: {
-    gap: 8,
-    marginBottom: 20,
-    paddingHorizontal: 4,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: 12,
+    gap: isSmallScreen ? 6 : 10,
+    marginTop: isSmallScreen ? 8 : 12,
   },
   liveBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    gap: 5,
+    paddingHorizontal: isSmallScreen ? 8 : 10,
+    paddingVertical: isSmallScreen ? 4 : 6,
+    borderRadius: BorderRadius.full,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
-  liveDot: {
+  liveDotOuter: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: 'rgba(16, 185, 129, 0.4)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  liveDotInner: {
     width: 6,
     height: 6,
     borderRadius: 3,
+    backgroundColor: '#10B981',
   },
   liveText: {
-    fontSize: 10,
+    color: '#FFFFFF',
+    fontSize: isSmallScreen ? 9 : 10,
     fontWeight: '800',
-    letterSpacing: 1,
+    letterSpacing: 0.5,
   },
-  cacheBadge: {
+  updateBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    gap: 4,
+    paddingHorizontal: isSmallScreen ? 8 : 10,
+    paddingVertical: isSmallScreen ? 4 : 5,
+    borderRadius: BorderRadius.full,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
   },
-  cacheText: {
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  subtitle: {
-    fontSize: 15,
-    fontWeight: '500',
-    lineHeight: 22,
-    flex: 1,
-    minWidth: 200,
-  },
-  lastUpdated: {
+  updateIcon: {
     fontSize: 12,
-    fontWeight: '500',
-    opacity: 0.7,
+  },
+  updateText: {
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: isSmallScreen ? 6 : 10,
+    marginTop: isSmallScreen ? 8 : 12,
+    paddingHorizontal: isSmallScreen ? 10 : 14,
+    paddingVertical: isSmallScreen ? 6 : 10,
+    borderRadius: BorderRadius.lg,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  statIcon: {
+    fontSize: 14,
+  },
+  statLabel: {
+    color: '#FFFFFF',
+    fontSize: isSmallScreen ? 10 : 11,
+    fontWeight: '600',
+    letterSpacing: 0.2,
+  },
+  statDivider: {
+    width: 1,
+    height: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  resultsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.xs,
+    marginBottom: Spacing.md,
+  },
+  listContainer: {
+    paddingTop: 10,
+    paddingBottom: 20,
+  },
+  resultsCount: {
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: -0.3,
+  },
+  sortBadge: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.sm,
+  },
+  sortText: {
+    fontSize: 12,
+    fontWeight: '600',
   },
   loaderContainer: {
-    paddingVertical: 16,
+    paddingVertical: Spacing.lg,
   },
   errorContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    marginHorizontal: 4,
-    marginVertical: 16,
-    borderRadius: 16,
+    padding: Spacing.lg,
+    marginHorizontal: Spacing.xs,
+    marginVertical: Spacing.lg,
+    borderRadius: BorderRadius.xl,
     borderWidth: 1,
-    gap: 12,
+    gap: Spacing.md,
     flexWrap: 'wrap',
+    overflow: 'hidden',
+  },
+  errorGradient: {
+    ...StyleSheet.absoluteFillObject,
   },
   errorIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 48,
+    height: 48,
+    borderRadius: BorderRadius.md,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
   },
   errorIcon: {
     fontSize: 24,
@@ -379,7 +525,6 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 150,
     gap: 4,
-    flexDirection: 'column',
   },
   errorTitle: {
     fontSize: 16,
@@ -391,40 +536,83 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   retryButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-    minWidth: 100,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.xl,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#EF4444',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  retryIcon: {
+    fontSize: 14,
   },
   retryText: {
     color: '#FFFFFF',
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '700',
   },
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 48,
-    gap: 12,
+    padding: Spacing.xxxl,
+    margin: Spacing.xs,
+    borderRadius: BorderRadius.xl,
+    gap: Spacing.md,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  emptyIconBg: {
+    width: 80,
+    height: 80,
+    borderRadius: BorderRadius.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.sm,
   },
   emptyIcon: {
-    fontSize: 48,
-    marginBottom: 4,
+    fontSize: 40,
   },
   emptyTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
     letterSpacing: -0.3,
   },
   emptyText: {
     fontSize: 14,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 22,
+    maxWidth: 280,
   },
-  listContainer: {
-    paddingBottom: 24,
+  emptyButton: {
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.xl,
+    marginTop: Spacing.md,
+  },
+  emptyButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
   },
   refreshingOverlay: {
     position: 'absolute',
@@ -436,24 +624,25 @@ const styles = StyleSheet.create({
   refreshingBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
+    gap: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.full,
+    borderWidth: 1,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.12,
-        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
       },
       android: {
-        elevation: 4,
+        elevation: 8,
       },
     }),
   },
   refreshingText: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
   },
 });

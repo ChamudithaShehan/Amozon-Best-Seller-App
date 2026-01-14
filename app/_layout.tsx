@@ -20,7 +20,7 @@ export const unstable_settings = {
 
 function RootLayoutContent() {
   const { colorScheme } = useTheme();
-  const cleanupIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const cleanupIntervalRef = useRef<number | null>(null);
   const [appIsReady, setAppIsReady] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const minSplashTimeRef = useRef<number>(Date.now());
@@ -61,21 +61,18 @@ function RootLayoutContent() {
   useEffect(() => {
     async function prepare() {
       try {
-        // Wait for minimum splash time (1.5 seconds) for smooth UX
-        const elapsed = Date.now() - minSplashTimeRef.current;
-        const minDisplayTime = 1500;
-        const remainingTime = Math.max(0, minDisplayTime - elapsed);
+        // Wait for a brief moment to ensure React Native is ready to render
+        await new Promise(resolve => setTimeout(resolve, 500));
 
-        await new Promise(resolve => setTimeout(resolve, remainingTime));
-
-        // Mark app as ready
+        // Mark app as ready - this renders the root view, with CustomSplashScreen on top
         setAppIsReady(true);
 
-        // Wait a bit more for custom splash fade-out animation
-        await new Promise(resolve => setTimeout(resolve, 400));
-
-        // Hide native splash screen
+        // Immediately hide native splash so the animated CustomSplashScreen becomes visible
         await SplashScreen.hideAsync();
+
+        // Wait for custom splash animations to complete (e.g. 2.5 seconds)
+        // This ensures the user sees the full entrance animation
+        await new Promise(resolve => setTimeout(resolve, 2500));
 
         // Hide custom splash screen
         setShowSplash(false);

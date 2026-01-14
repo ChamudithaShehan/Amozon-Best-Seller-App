@@ -1,30 +1,31 @@
 import { ThemedText } from '@/components/themed-text';
-import { Colors } from '@/constants/theme';
+import { BorderRadius, Colors, Spacing } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
-import { Platform, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Animated, {
     useAnimatedStyle,
     useSharedValue,
     withSpring,
-    withTiming,
+    withTiming
 } from 'react-native-reanimated';
 
 interface Category {
     id: string;
     name: string;
+    icon: string;
 }
 
 // Rainforest API bestseller category IDs
 // These are VERIFIED WORKING category IDs for amazon.com
-// Format: bestsellers_[amazon_category_slug]
 const CATEGORIES: Category[] = [
-    { id: 'bestsellers_fashion', name: '👗 Clothing & Jewelry' },
-    { id: 'bestsellers_appliances', name: '🏠 Appliances' },
-    { id: 'bestsellers_toys', name: '🧸 Toys & Games' },
-    { id: 'bestsellers_kitchen', name: '🍳 Kitchen & Dining' },
-    { id: 'bestsellers_sports', name: '⚽ Sports&Outdoors' },
-    { id: 'bestsellers_automotive', name: '🚗 Automotive' },
+    { id: 'bestsellers_fashion', name: 'Clothing & Jewelry', icon: '👗' },
+    { id: 'bestsellers_appliances', name: 'Appliances', icon: '🏠' },
+    { id: 'bestsellers_electronics', name: 'Electronics', icon: '📱' },
+    { id: 'bestsellers_kitchen', name: 'Kitchen & Dining', icon: '🍳' },
+    { id: 'bestsellers_books', name: 'Books', icon: '📚' },
+    { id: 'bestsellers_automotive', name: 'Automotive', icon: '🚗' },
 ];
 
 interface CategoryChipsProps {
@@ -38,35 +39,36 @@ function CategoryChip({
     category,
     isActive,
     colors,
+    colorScheme,
     onPress,
 }: {
     category: Category;
     isActive: boolean;
     colors: typeof Colors.light;
+    colorScheme: 'light' | 'dark';
     onPress: () => void;
 }) {
     const scale = useSharedValue(1);
-    const opacity = useSharedValue(1);
+    const pressed = useSharedValue(0);
 
     const animatedStyle = useAnimatedStyle(() => ({
         transform: [{ scale: scale.value }],
-        opacity: opacity.value,
     }));
 
     const handlePressIn = () => {
-        scale.value = withSpring(0.95, {
+        scale.value = withSpring(0.92, {
             damping: 15,
-            stiffness: 300,
+            stiffness: 350,
         });
-        opacity.value = withTiming(0.8, { duration: 100 });
+        pressed.value = withTiming(1, { duration: 100 });
     };
 
     const handlePressOut = () => {
         scale.value = withSpring(1, {
             damping: 15,
-            stiffness: 300,
+            stiffness: 350,
         });
-        opacity.value = withTiming(1, { duration: 100 });
+        pressed.value = withTiming(0, { duration: 150 });
     };
 
     return (
@@ -79,24 +81,63 @@ function CategoryChip({
                 styles.chip,
                 isActive && styles.chipActive,
                 {
-                    backgroundColor: isActive ? colors.chipActiveBg : colors.chipBg,
                     borderColor: isActive ? colors.accent : colors.border,
                     borderWidth: isActive ? 2 : 1.5,
                 },
                 animatedStyle,
             ]}
         >
-            <ThemedText
-                style={[
-                    styles.chipText,
+            {/* Background */}
+            {isActive ? (
+                <LinearGradient
+                    colors={colorScheme === 'light'
+                        ? [colors.accent, colors.gradientMiddle]
+                        : [colors.accent, '#FF9500']
+                    }
+                    style={StyleSheet.absoluteFill}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                />
+            ) : (
+                <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.chipBg }]} />
+            )}
+
+            {/* Glassmorphism overlay for inactive chips */}
+            {!isActive && (
+                <View style={[styles.glassOverlay, { backgroundColor: colors.glassOverlay }]} />
+            )}
+
+            {/* Content */}
+            <View style={styles.chipContent}>
+                <View style={[
+                    styles.iconContainer,
                     {
-                        color: isActive ? colors.chipActiveText : colors.text,
-                        fontWeight: isActive ? '700' : '600',
-                    },
-                ]}
-            >
-                {category.name}
-            </ThemedText>
+                        backgroundColor: isActive
+                            ? 'rgba(255, 255, 255, 0.25)'
+                            : colors.background,
+                    }
+                ]}>
+                    <ThemedText style={styles.iconEmoji}>{category.icon}</ThemedText>
+                </View>
+                <ThemedText
+                    style={[
+                        styles.chipText,
+                        {
+                            color: isActive ? '#FFFFFF' : colors.text,
+                            fontWeight: isActive ? '700' : '600',
+                        },
+                    ]}
+                >
+                    {category.name}
+                </ThemedText>
+            </View>
+
+            {/* Active indicator dot */}
+            {isActive && (
+                <View style={styles.activeDot}>
+                    <View style={styles.activeDotInner} />
+                </View>
+            )}
         </AnimatedTouchableOpacity>
     );
 }
@@ -106,58 +147,97 @@ export function CategoryChips({ selectedCategory, onSelectCategory }: CategoryCh
     const colors = Colors[colorScheme];
 
     return (
-        <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.container}
-            style={styles.scrollView}
-        >
-            {CATEGORIES.map((category) => {
-                const isActive = selectedCategory === category.id;
-                return (
-                    <CategoryChip
-                        key={category.id}
-                        category={category}
-                        isActive={isActive}
-                        colors={colors}
-                        onPress={() => onSelectCategory(category.id)}
-                    />
-                );
-            })}
-        </ScrollView>
+        <View style={styles.wrapper}>
+            {/* Section Label */}
+            <View style={styles.labelContainer}>
+                <ThemedText style={[styles.sectionLabel, { color: colors.textSecondary }]}>
+                    Categories
+                </ThemedText>
+                <View style={[styles.categoryCount, { backgroundColor: colors.primeLight }]}>
+                    <ThemedText style={[styles.categoryCountText, { color: colors.prime }]}>
+                        {CATEGORIES.length}
+                    </ThemedText>
+                </View>
+            </View>
+
+            {/* Chips ScrollView */}
+            <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.container}
+                style={styles.scrollView}
+            >
+                {CATEGORIES.map((category) => {
+                    const isActive = selectedCategory === category.id;
+                    return (
+                        <CategoryChip
+                            key={category.id}
+                            category={category}
+                            isActive={isActive}
+                            colors={colors}
+                            colorScheme={colorScheme}
+                            onPress={() => onSelectCategory(category.id)}
+                        />
+                    );
+                })}
+            </ScrollView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
+    wrapper: {
+        marginBottom: Spacing.lg,
+    },
+    labelContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: Spacing.sm,
+        marginBottom: Spacing.md,
+        paddingHorizontal: Spacing.xs,
+    },
+    sectionLabel: {
+        fontSize: 13,
+        fontWeight: '600',
+        letterSpacing: 0.5,
+        textTransform: 'uppercase',
+    },
+    categoryCount: {
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: BorderRadius.sm,
+    },
+    categoryCountText: {
+        fontSize: 11,
+        fontWeight: '700',
+    },
     scrollView: {
-        marginBottom: 20,
+        marginLeft: -Spacing.xs,
     },
     container: {
-        paddingHorizontal: 3,
-        paddingVertical: 6,
-        gap: 8,
+        paddingHorizontal: Spacing.xs,
+        paddingVertical: Spacing.sm,
+        gap: Spacing.md,
     },
     chip: {
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 16,
-        borderWidth: 1.5,
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: 32,
+        paddingHorizontal: Spacing.md,
+        paddingVertical: Spacing.sm,
+        borderRadius: BorderRadius.lg,
+        overflow: 'hidden',
+        position: 'relative',
         ...Platform.select({
             ios: {
                 shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
+                shadowOffset: { width: 0, height: 3 },
                 shadowOpacity: 0.1,
-                shadowRadius: 3,
+                shadowRadius: 6,
             },
             android: {
-                elevation: 2,
+                elevation: 4,
             },
             web: {
-                boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
-                transition: 'all 0.2s ease',
+                boxShadow: '0 3px 10px rgba(0,0,0,0.08)',
+                transition: 'all 0.25s ease',
                 cursor: 'pointer',
             },
         }),
@@ -166,22 +246,55 @@ const styles = StyleSheet.create({
         ...Platform.select({
             ios: {
                 shadowColor: '#FF9900',
-                shadowOffset: { width: 0, height: 3 },
-                shadowOpacity: 0.2,
-                shadowRadius: 6,
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.35,
+                shadowRadius: 10,
             },
             android: {
-                elevation: 4,
+                elevation: 8,
             },
             web: {
-                boxShadow: '0 4px 12px rgba(255, 153, 0, 0.3)',
+                boxShadow: '0 6px 20px rgba(255, 153, 0, 0.35)',
             },
         }),
     },
+    glassOverlay: {
+        ...StyleSheet.absoluteFillObject,
+    },
+    chipContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: Spacing.sm,
+    },
+    iconContainer: {
+        width: 32,
+        height: 32,
+        borderRadius: BorderRadius.sm,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    iconEmoji: {
+        fontSize: 16,
+    },
     chipText: {
-        fontSize: 12,
+        fontSize: 13,
         letterSpacing: 0.2,
-        textAlign: 'center',
-        lineHeight: 16,
+    },
+    activeDot: {
+        position: 'absolute',
+        top: 6,
+        right: 6,
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: 'rgba(255, 255, 255, 0.4)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    activeDotInner: {
+        width: 4,
+        height: 4,
+        borderRadius: 2,
+        backgroundColor: '#FFFFFF',
     },
 });

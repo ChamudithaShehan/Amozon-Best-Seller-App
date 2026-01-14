@@ -5,7 +5,7 @@ import { Colors } from '@/constants/theme';
 import { BestsellerProduct } from '@/services/rainforestApi';
 import { Image } from 'expo-image';
 import React from 'react';
-import { Modal, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Modal, Platform, SafeAreaView, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 interface TrendingProduct {
     product: BestsellerProduct;
@@ -26,11 +26,12 @@ export function TrendingModal({ visible, onClose, trendingProducts, colorScheme 
         <Modal
             visible={visible}
             animationType="slide"
-            transparent={true}
+            transparent={false}
             onRequestClose={onClose}
+            presentationStyle="fullScreen"
         >
-            <View style={styles.overlay}>
-                <ThemedView style={[styles.modalContent, { backgroundColor: colors.cardBackground }]}>
+            <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+                <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
                     {/* Header */}
                     <View style={styles.header}>
                         <View style={styles.headerTitle}>
@@ -47,8 +48,8 @@ export function TrendingModal({ visible, onClose, trendingProducts, colorScheme 
                     </ThemedText>
 
                     {/* Products List */}
-                    <ScrollView 
-                        style={styles.scrollView} 
+                    <ScrollView
+                        style={styles.scrollView}
                         contentContainerStyle={styles.scrollContent}
                         showsVerticalScrollIndicator={false}
                         nestedScrollEnabled={true}
@@ -59,83 +60,67 @@ export function TrendingModal({ visible, onClose, trendingProducts, colorScheme 
                             </View>
                         ) : (
                             trendingProducts.map((item, index) => (
-                            <View
-                                key={item.product.asin || index}
-                                style={[styles.productCard, {
-                                    backgroundColor: colors.background,
-                                    borderColor: colors.border,
-                                }]}
-                            >
-                                <View style={[styles.rankBadge, { backgroundColor: colors.accent }]}>
-                                    <ThemedText style={styles.rankText}>#1</ThemedText>
-                                </View>
-
-                                <View style={[styles.imageContainer, { backgroundColor: colors.glassOverlay }]}>
-                                    {item.product.image ? (
-                                        <Image
-                                            source={{ uri: item.product.image }}
-                                            style={styles.productImage}
-                                            contentFit="contain"
-                                        />
-                                    ) : (
-                                        <ThemedText style={styles.noImage}>📦</ThemedText>
-                                    )}
-                                </View>
-
-                                <View style={styles.productInfo}>
-                                    <View style={[styles.categoryBadge, { backgroundColor: colors.primeLight }]}>
-                                        <ThemedText style={[styles.categoryText, { color: colors.prime }]}>
-                                            {item.categoryName}
-                                        </ThemedText>
+                                <View
+                                    key={item.product.asin || index}
+                                    style={[styles.productCard, {
+                                        backgroundColor: colors.background,
+                                        borderColor: colors.border,
+                                    }]}
+                                >
+                                    <View style={[styles.rankBadge, { backgroundColor: colors.accent }]}>
+                                        <ThemedText style={styles.rankText}>#1</ThemedText>
                                     </View>
-                                    <ThemedText numberOfLines={2} style={styles.productTitle}>
-                                        {item.product.title}
-                                    </ThemedText>
-                                    {item.product.rating && (
-                                        <ThemedText style={[styles.rating, { color: colors.accent }]}>
-                                            ⭐ {item.product.rating.toFixed(1)}
+
+                                    <View style={[styles.imageContainer, { backgroundColor: colors.glassOverlay }]}>
+                                        {item.product.image ? (
+                                            <Image
+                                                source={{ uri: item.product.image }}
+                                                style={styles.productImage}
+                                                contentFit="contain"
+                                            />
+                                        ) : (
+                                            <ThemedText style={styles.noImage}>📦</ThemedText>
+                                        )}
+                                    </View>
+
+                                    <View style={styles.productInfo}>
+                                        <View style={[styles.categoryBadge, { backgroundColor: colors.primeLight }]}>
+                                            <ThemedText style={[styles.categoryText, { color: colors.prime }]}>
+                                                {item.categoryName}
+                                            </ThemedText>
+                                        </View>
+                                        <ThemedText numberOfLines={2} style={styles.productTitle}>
+                                            {item.product.title}
                                         </ThemedText>
-                                    )}
-                                    {item.product.price?.value && (
-                                        <ThemedText style={styles.price}>
-                                            ${item.product.price.value.toFixed(2)}
-                                        </ThemedText>
-                                    )}
+                                        {item.product.rating && (
+                                            <ThemedText style={[styles.rating, { color: colors.accent }]}>
+                                                ⭐ {item.product.rating.toFixed(1)}
+                                            </ThemedText>
+                                        )}
+                                        {item.product.price?.value && (
+                                            <ThemedText style={styles.price}>
+                                                ${item.product.price.value.toFixed(2)}
+                                            </ThemedText>
+                                        )}
+                                    </View>
                                 </View>
-                            </View>
                             ))
                         )}
                     </ScrollView>
                 </ThemedView>
-            </View>
+            </SafeAreaView>
         </Modal>
     );
 }
 
 const styles = StyleSheet.create({
-    overlay: {
+    container: {
         flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        justifyContent: 'flex-end',
     },
     modalContent: {
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
-        padding: 20,
-        maxHeight: '100%',
-        minHeight: '100%',
-        width: '100%',
-        ...Platform.select({
-            ios: {
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: -4 },
-                shadowOpacity: 0.2,
-                shadowRadius: 16,
-            },
-            android: {
-                elevation: 16,
-            },
-        }),
+        flex: 1,
+        paddingHorizontal: 16,
+        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 0,
     },
     header: {
         flexDirection: 'row',

@@ -28,7 +28,7 @@ export function useBestsellers(
   const [error, setError] = useState<string | null>(null);
   const [fromCache, setFromCache] = useState<boolean>(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const cacheCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const cacheCheckIntervalRef = useRef<number | null>(null);
   const CACHE_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
 
   const categoryId = options.categoryId || 'bestsellers_fashion';

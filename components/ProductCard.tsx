@@ -1,19 +1,27 @@
 import { ThemedText } from '@/components/themed-text';
-import { Colors } from '@/constants/theme';
+import { BorderRadius, Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { BestsellerProduct } from '@/services/rainforestApi';
 import { Image } from 'expo-image';
 import React from 'react';
 import { Linking, Platform, Pressable, StyleSheet, View } from 'react-native';
+import Animated, {
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring,
+} from 'react-native-reanimated';
 
 interface ProductCardProps {
     product: BestsellerProduct;
     onPress?: () => void;
 }
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 export function ProductCard({ product, onPress }: ProductCardProps) {
     const colorScheme = useColorScheme() ?? 'light';
     const colors = Colors[colorScheme];
+    const scale = useSharedValue(1);
 
     const renderStars = (rating: number) => {
         const fullStars = Math.floor(rating);
@@ -31,179 +39,201 @@ export function ProductCard({ product, onPress }: ProductCardProps) {
         }
     };
 
+    const animatedStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: scale.value }],
+    }));
+
+    const handlePressIn = () => {
+        scale.value = withSpring(0.98, { damping: 15, stiffness: 300 });
+    };
+
+    const handlePressOut = () => {
+        scale.value = withSpring(1, { damping: 15, stiffness: 300 });
+    };
+
+    // Get rank styling
+    const getRankStyle = (position: number | undefined) => {
+        if (!position) return { bgColor: colors.textSecondary, label: '' };
+        if (position === 1) return { bgColor: '#FFD700', label: '🥇' };
+        if (position === 2) return { bgColor: '#C0C0C0', label: '🥈' };
+        if (position === 3) return { bgColor: '#CD7F32', label: '🥉' };
+        return { bgColor: colors.accent, label: '' };
+    };
+
+    const rankStyle = getRankStyle(product.position);
+    const isTopThree = product.position && product.position <= 3;
+
     return (
-        <Pressable
+        <AnimatedPressable
             onPress={handleViewOnAmazon}
-            style={({ pressed, hovered }) => [
+            onPressIn={handlePressIn}
+            onPressOut={handlePressOut}
+            style={[
                 styles.card,
                 {
                     backgroundColor: colors.cardBackground,
-                    borderColor: hovered ? colors.accent : colors.border,
-                    transform: [{ scale: pressed ? 0.98 : hovered ? 1.01 : 1 }],
-                    shadowColor: colorScheme === 'light' ? '#000' : '#000',
-                    shadowOpacity: hovered ? 0.15 : 0.08,
+                    borderColor: isTopThree ? `${rankStyle.bgColor}40` : colors.border,
+                    borderWidth: isTopThree ? 1.5 : 1,
                 },
+                animatedStyle,
             ]}
         >
-            {/* Position Badge - Top Right */}
+            {/* Rank Badge */}
             {product.position && (
                 <View style={[
-                    styles.positionBadge,
-                    {
-                        backgroundColor: colors.accent,
-                        shadowColor: colors.accent,
-                    }
+                    styles.rankBadge,
+                    { backgroundColor: isTopThree ? rankStyle.bgColor : colors.accent }
                 ]}>
-                    <ThemedText style={styles.positionText}>#{product.position}</ThemedText>
+                    <ThemedText style={styles.rankText}>
+                        {isTopThree ? rankStyle.label : `#${product.position}`}
+                    </ThemedText>
+                    {isTopThree && (
+                        <ThemedText style={styles.rankNumber}>#{product.position}</ThemedText>
+                    )}
                 </View>
             )}
 
-            {/* Product Image Section */}
-            <View style={styles.imageSection}>
-                <View style={[
-                    styles.imageContainer,
-                    {
-                        backgroundColor: colorScheme === 'light' ? '#F5F5F5' : colors.glassOverlay,
-                        shadowColor: '#000',
-                        shadowOpacity: colorScheme === 'light' ? 0.1 : 0.3,
-                    }
-                ]}>
-                    {product.image ? (
-                        <Image
-                            source={{ uri: product.image }}
-                            style={styles.productImage}
-                            contentFit="contain"
-                            transition={300}
-                        />
-                    ) : (
-                        <View style={[styles.imagePlaceholder, { backgroundColor: colors.shimmerBase }]}>
-                            <ThemedText style={styles.placeholderIcon}>📦</ThemedText>
-                        </View>
-                    )}
-                </View>
-
-                {/* Top Seller Medal */}
-                {product.position && product.position <= 3 && (
-                    <View style={[
-                        styles.medalBadge,
-                        {
-                            backgroundColor: colors.gradientEnd,
-                            shadowColor: colors.gradientEnd,
-                        }
-                    ]}>
-                        <ThemedText style={styles.medalText}>
-                            {product.position === 1 ? '🥇' : product.position === 2 ? '🥈' : '🥉'}
-                        </ThemedText>
+            {/* Product Image */}
+            <View style={[styles.imageContainer, { backgroundColor: colorScheme === 'light' ? '#F8F9FA' : colors.glassOverlay }]}>
+                {product.image ? (
+                    <Image
+                        source={{ uri: product.image }}
+                        style={styles.productImage}
+                        contentFit="contain"
+                        transition={200}
+                    />
+                ) : (
+                    <View style={styles.imagePlaceholder}>
+                        <ThemedText style={styles.placeholderIcon}>📦</ThemedText>
                     </View>
                 )}
             </View>
 
-            {/* Product Info Section */}
-            <View style={styles.infoSection}>
+            {/* Product Details */}
+            <View style={styles.detailsContainer}>
                 {/* Title */}
                 <ThemedText numberOfLines={2} style={styles.productTitle}>
-                    {product.title || 'Untitled Product'}
+                    {product.title}
                 </ThemedText>
 
-                {/* Rating */}
+                {/* Rating Row */}
                 {product.rating && (
                     <View style={styles.ratingRow}>
-                        <ThemedText style={[styles.starsText, { color: colors.accent }]}>
-                            {renderStars(product.rating)}
-                        </ThemedText>
-                        <ThemedText style={[styles.ratingValue, { color: colors.accent }]}>
-                            {product.rating.toFixed(1)}
-                        </ThemedText>
+                        <View style={[styles.ratingBadge, { backgroundColor: colors.warningLight }]}>
+                            <ThemedText style={[styles.starsText, { color: colors.accent }]}>
+                                {renderStars(product.rating)}
+                            </ThemedText>
+                            <ThemedText style={[styles.ratingValue, { color: colors.accent }]}>
+                                {product.rating.toFixed(1)}
+                            </ThemedText>
+                        </View>
                         {product.ratings_total && (
                             <ThemedText style={[styles.reviewCount, { color: colors.textSecondary }]}>
-                                ({product.ratings_total.toLocaleString()})
+                                ({product.ratings_total.toLocaleString()} reviews)
                             </ThemedText>
                         )}
                     </View>
                 )}
 
-                {/* Price Section */}
-                <View style={styles.priceSection}>
+                {/* Price */}
+                <View style={styles.priceRow}>
                     {product.price?.value ? (
-                        <View style={styles.priceRow}>
-                            <ThemedText style={[styles.priceSymbol, { color: colors.text }]}>
-                                {product.price.currency || '$'}
-                            </ThemedText>
+                        <>
+                            <ThemedText style={[styles.priceSymbol, { color: colors.text }]}>$</ThemedText>
                             <ThemedText style={[styles.priceValue, { color: colors.text }]}>
                                 {Math.floor(product.price.value)}
                             </ThemedText>
-                            <ThemedText style={[styles.priceCents, { color: colors.textSecondary }]}>
-                                {((product.price.value % 1) * 100).toFixed(0).padStart(2, '0')}
+                            <ThemedText style={[styles.priceCents, { color: colors.text }]}>
+                                {(product.price.value % 1).toFixed(2).substring(1)}
                             </ThemedText>
-                        </View>
+                        </>
                     ) : (
-                        <ThemedText style={[styles.noPriceText, { color: colors.textSecondary }]}>
-                            Price not available
+                        <ThemedText style={[styles.priceUnavailable, { color: colors.textSecondary }]}>
+                            Price unavailable
                         </ThemedText>
                     )}
                 </View>
 
-                {/* View on Amazon Link */}
-                <View style={styles.linkRow}>
-                    <View style={[styles.amazonBadge, { backgroundColor: colors.primeLight }]}>
-                        <ThemedText style={[styles.amazonText, { color: colors.prime }]}>
-                            View on Amazon
-                        </ThemedText>
-                    </View>
-                </View>
+                {/* Amazon Button */}
+                <Pressable
+                    style={[styles.amazonButton, { backgroundColor: colors.prime }]}
+                    onPress={handleViewOnAmazon}
+                >
+                    <ThemedText style={styles.amazonButtonText}>View on Amazon</ThemedText>
+                    <ThemedText style={styles.amazonArrow}>→</ThemedText>
+                </Pressable>
             </View>
-        </Pressable>
+        </AnimatedPressable>
     );
 }
 
 const styles = StyleSheet.create({
     card: {
         flexDirection: 'row',
-        padding: 18,
-        marginBottom: 16,
-        marginHorizontal: 4,
-        borderRadius: 20,
+        padding: 12,
+        marginBottom: 10,
+        marginHorizontal: 2,
+        borderRadius: BorderRadius.lg,
         borderWidth: 1,
-        gap: 16,
-        overflow: 'visible',
+        gap: 12,
         position: 'relative',
         ...Platform.select({
             ios: {
-                shadowOffset: { width: 0, height: 6 },
-                shadowRadius: 16,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.06,
+                shadowRadius: 8,
             },
             android: {
-                elevation: 8,
+                elevation: 3,
             },
             web: {
-                boxShadow: '0 6px 24px rgba(0,0,0,0.08)',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
                 cursor: 'pointer',
             },
         }),
     },
-    imageSection: {
-        position: 'relative',
+    rankBadge: {
+        position: 'absolute',
+        top: -6,
+        left: 8,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 3,
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: BorderRadius.sm,
+        zIndex: 10,
+        ...Platform.select({
+            ios: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.15,
+                shadowRadius: 3,
+            },
+            android: {
+                elevation: 4,
+            },
+        }),
+    },
+    rankText: {
+        color: '#FFFFFF',
+        fontSize: 12,
+        fontWeight: '700',
+    },
+    rankNumber: {
+        color: 'rgba(255,255,255,0.9)',
+        fontSize: 10,
+        fontWeight: '600',
     },
     imageContainer: {
-        width: 120,
-        height: 140,
-        borderRadius: 16,
+        width: 100,
+        height: 100,
+        borderRadius: BorderRadius.md,
         overflow: 'hidden',
         justifyContent: 'center',
         alignItems: 'center',
-        ...Platform.select({
-            ios: {
-                shadowOffset: { width: 0, height: 4 },
-                shadowRadius: 12,
-            },
-            android: {
-                elevation: 6,
-            },
-            web: {
-                boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
-            },
-        }),
     },
     productImage: {
         width: '100%',
@@ -216,158 +246,87 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     placeholderIcon: {
-        fontSize: 36,
+        fontSize: 32,
         opacity: 0.5,
     },
-    positionBadge: {
-        position: 'absolute',
-        top: 12,
-        left: 12,
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-        borderRadius: 12,
-        minWidth: 36,
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderWidth: 2,
-        borderColor: '#FFFFFF',
-        zIndex: 10,
-        ...Platform.select({
-            ios: {
-                shadowOffset: { width: 0, height: 3 },
-                shadowOpacity: 0.5,
-                shadowRadius: 8,
-            },
-            android: {
-                elevation: 6,
-            },
-            web: {
-                boxShadow: '0 3px 12px rgba(255, 153, 0, 0.4)',
-            },
-        }),
-    },
-    positionText: {
-        color: '#FFFFFF',
-        fontSize: 12,
-        fontWeight: '900',
-        letterSpacing: 0.3,
-    },
-    medalBadge: {
-        position: 'absolute',
-        bottom: -6,
-        left: -6,
-        width: 32,
-        height: 32,
-        borderRadius: 16,
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderWidth: 2,
-        borderColor: '#FFFFFF',
-        ...Platform.select({
-            ios: {
-                shadowOffset: { width: 0, height: 3 },
-                shadowOpacity: 0.5,
-                shadowRadius: 8,
-            },
-            android: {
-                elevation: 6,
-            },
-            web: {
-                boxShadow: '0 3px 12px rgba(0,0,0,0.3)',
-            },
-        }),
-    },
-    medalText: {
-        fontSize: 16,
-    },
-    infoSection: {
+    detailsContainer: {
         flex: 1,
         justifyContent: 'space-between',
-        gap: 8,
         paddingVertical: 2,
     },
     productTitle: {
-        fontSize: 16,
-        fontWeight: '700',
-        lineHeight: 22,
-        letterSpacing: -0.3,
-        marginBottom: 2,
+        fontSize: 14,
+        fontWeight: '600',
+        lineHeight: 19,
+        marginBottom: 6,
     },
     ratingRow: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 6,
-        flexWrap: 'wrap',
-        marginTop: 4,
+        marginBottom: 6,
+    },
+    ratingBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        paddingHorizontal: 6,
+        paddingVertical: 3,
+        borderRadius: BorderRadius.xs,
     },
     starsText: {
-        fontSize: 14,
-        letterSpacing: 1.5,
+        fontSize: 10,
+        letterSpacing: -0.5,
     },
     ratingValue: {
-        fontSize: 14,
-        fontWeight: '800',
-        marginLeft: 2,
+        fontSize: 12,
+        fontWeight: '700',
     },
     reviewCount: {
-        fontSize: 12,
-        fontWeight: '500',
-        marginLeft: 2,
-    },
-    priceSection: {
-        marginTop: 8,
-        marginBottom: 4,
+        fontSize: 11,
     },
     priceRow: {
         flexDirection: 'row',
-        alignItems: 'baseline',
-        gap: 2,
+        alignItems: 'flex-start',
+        marginBottom: 8,
     },
     priceSymbol: {
-        fontSize: 16,
+        fontSize: 12,
         fontWeight: '600',
-        marginRight: 1,
+        marginTop: 2,
     },
     priceValue: {
-        fontSize: 28,
+        fontSize: 22,
         fontWeight: '800',
-        letterSpacing: -1.2,
-        lineHeight: 32,
+        letterSpacing: -0.5,
     },
     priceCents: {
-        fontSize: 14,
+        fontSize: 12,
         fontWeight: '600',
-        marginLeft: 1,
+        marginTop: 2,
     },
-    noPriceText: {
-        fontSize: 14,
+    priceUnavailable: {
+        fontSize: 13,
         fontStyle: 'italic',
-        fontWeight: '500',
     },
-    linkRow: {
-        marginTop: 8,
-    },
-    amazonBadge: {
+    amazonButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 14,
+        justifyContent: 'center',
+        gap: 6,
         paddingVertical: 8,
-        borderRadius: 10,
-        alignSelf: 'flex-start',
-        ...Platform.select({
-            web: {
-                transition: 'all 0.2s ease',
-            },
-        }),
+        paddingHorizontal: 12,
+        borderRadius: BorderRadius.md,
+        overflow: 'hidden',
     },
-    amazonText: {
-        fontSize: 13,
+    amazonButtonText: {
+        color: '#FFFFFF',
+        fontSize: 12,
         fontWeight: '700',
-        letterSpacing: 0.2,
     },
-    asinText: {
-        fontSize: 10,
-        marginTop: 4,
-        fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    amazonArrow: {
+        color: '#FFFFFF',
+        fontSize: 14,
+        fontWeight: '600',
     },
 });

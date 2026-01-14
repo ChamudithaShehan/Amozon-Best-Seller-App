@@ -7,9 +7,9 @@ import { useCallback, useEffect, useState } from 'react';
 const ALL_CATEGORIES = [
     { id: 'bestsellers_fashion', name: 'Clothing, Shoes & Jewelry' },
     { id: 'bestsellers_appliances', name: 'Appliances' },
-    { id: 'bestsellers_toys', name: 'Toys & Games' },
+    { id: 'bestsellers_electronics', name: 'Electronics' },
     { id: 'bestsellers_kitchen', name: 'Kitchen & Dining' },
-    { id: 'bestsellers_sports', name: 'Sports & Outdoors' },
+    { id: 'bestsellers_books', name: 'Books' },
     { id: 'bestsellers_automotive', name: 'Automotive' },
 ];
 
